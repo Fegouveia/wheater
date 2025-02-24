@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget de Clima</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f8ff;
+        }
+        .weather-card {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        .icon {
+            font-size: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="weather-card" id="weather">
+        <p>Obtendo localização...</p>
+    </div>
+    
+    <script>
+        const API_KEY = "84c138eae9997c7109b1dfbfc73d0075";
+        const weatherDiv = document.getElementById("weather");
+
+        function fetchWeather(lat, lon) {
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}&lang=pt`)
+                .then(response => response.json())
+                .then(data => {
+                    const weather = data.weather[0].main;
+                    const temp = Math.round(data.main.temp);
+                    const city = data.name;
+                    
+                    let icon = "☁";
+                    if (weather === "Clear") icon = "☀";
+                    else if (weather === "Rain") icon = "🌧";
+                    else if (weather === "Snow") icon = "❄";
+                    
+                    weatherDiv.innerHTML = `
+                        <h2>${city}</h2>
+                        <div class="icon">${icon}</div>
+                        <p>${temp}°C</p>
+                        <p>${data.weather[0].description}</p>
+                    `;
+                })
+                .catch(() => {
+                    weatherDiv.innerHTML = "Erro ao obter clima.";
+                });
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => fetchWeather(position.coords.latitude, position.coords.longitude),
+                    () => weatherDiv.innerHTML = "Permita acesso à localização para ver o clima."
+                );
+            } else {
+                weatherDiv.innerHTML = "Geolocalização não suportada pelo navegador.";
+            }
+        }
+
+        getLocation();
+    </script>
+</body>
+</html>
